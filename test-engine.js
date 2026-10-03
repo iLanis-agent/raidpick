@@ -1,0 +1,28 @@
+var R = require('./engine.js'), fails = 0, n = 0;
+function eq(a, b, m) { n++; if (Math.abs(a - b) > 1e-6 && a !== b) { fails++; console.log('FAIL', m, a, b); } }
+var a;
+a = R.analyze('r0', 4, 4); eq(a.usableTb, 16, 'r0 cap'); eq(a.guaranteed, 0, 'r0 tol'); eq(a.efficiency, 100, 'r0 eff');
+a = R.analyze('r1', 2, 4); eq(a.usableTb, 4, 'r1 cap'); eq(a.guaranteed, 1, 'r1 tol');
+a = R.analyze('r1', 3, 4); eq(a.usableTb, 4, 'r1 3way'); eq(a.guaranteed, 2, 'r1 3way tol');
+a = R.analyze('r5', 4, 4); eq(a.usableTb, 12, 'r5 cap'); eq(a.guaranteed, 1, 'r5 tol'); eq(a.efficiency, 75, 'r5 eff');
+a = R.analyze('r5', 3, 8); eq(a.usableTb, 16, 'r5 3x8');
+a = R.analyze('r6', 6, 4); eq(a.usableTb, 16, 'r6 cap'); eq(a.guaranteed, 2, 'r6 tol');
+a = R.analyze('r6', 4, 10); eq(a.usableTb, 20, 'r6 4x10'); eq(a.efficiency, 50, 'r6 eff');
+a = R.analyze('r10', 4, 4); eq(a.usableTb, 8, 'r10 cap'); eq(a.guaranteed, 1, 'r10 guaranteed'); eq(a.best, 2, 'r10 best');
+a = R.analyze('r10', 8, 2); eq(a.usableTb, 8, 'r10 8x2'); eq(a.best, 4, 'r10 best 8');
+a = R.analyze('r5', 2, 4); eq(a.ok, false, 'r5 min'); eq(a.reason.indexOf('at least 3') > 0, true, 'r5 reason');
+a = R.analyze('r6', 3, 4); eq(a.ok, false, 'r6 min');
+a = R.analyze('r10', 5, 4); eq(a.ok, false, 'r10 odd');
+a = R.analyze('r0', 1, 4); eq(a.ok, false, 'r0 min');
+a = R.analyze('r5', 5, 4, 1); eq(a.active, 4, 'spare active'); eq(a.usableTb, 12, 'spare cap'); eq(a.rawTb, 20, 'spare raw'); eq(a.efficiency, 60, 'spare eff');
+a = R.analyze('r5', 3, 4, 1); eq(a.ok, false, 'spare below min');
+a = R.analyze('r5', 4, 4); eq(Math.round(a.usableTib * 100) / 100, 10.91, 'tib 12TB');
+a = R.analyze('r1', 2, 1); eq(Math.round(a.usableTib * 1000) / 1000, 0.909, 'tib 1TB');
+eq(R.analyze('r5', 0, 4), null, 'bad n'); eq(R.analyze('r5', 4, 0), null, 'bad size'); eq(R.analyze('r5', 4.5, 4), null, 'frac'); eq(R.analyze('zz', 4, 4), null, 'bad lvl'); eq(R.analyze('r5', 4, 4, -1), null, 'neg spare');
+eq(R.compare(4, 4).length, 5, 'compare len'); eq(R.compare(4, 4)[2].usableTb, 12, 'compare r5');
+eq(R.compare(3, 4)[3].ok, false, 'compare r6 3'); eq(R.compare(3, 4)[4].ok, false, 'compare r10 3');
+eq(R.minSize([4, 8, 6]), 4, 'minsize');
+a = R.analyze('r6', 8, 16); eq(a.usableTb, 96, 'r6 8x16'); eq(a.rawTb, 128, 'raw'); eq(a.efficiency, 75, 'eff');
+a = R.analyze('r10', 6, 4); eq(a.usableTb, 12, 'r10 6x4'); eq(a.efficiency, 50, 'r10 eff');
+a = R.analyze('r0', 2, 0.5); eq(a.usableTb, 1, 'r0 small');
+console.log(n - fails + '/' + n + ' pass'); process.exit(fails ? 1 : 0);
