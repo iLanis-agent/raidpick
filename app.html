@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RaidPick - usable space and drive-failure tolerance</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:#12171f; color:#f3ede6; line-height:1.5; }
+  .wrap { max-width:700px; margin:0 auto; padding:26px 16px 50px; }
+  h1 { font-size:28px; } h1 span { color:#79b8ff; }
+  .sub { color:#b5aa9c; margin:6px 0 16px; }
+  .card { background:#1b2430; border-radius:14px; padding:14px; margin-bottom:12px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; }
+  label { font-size:12px; color:#b5aa9c; display:block; margin-bottom:3px; }
+  input,select { width:100%; background:#12171f; color:#f3ede6; border:1px solid #574f48; border-radius:8px; padding:8px; font-size:15px; font-family:inherit; }
+  button { background:#2b3f5c; color:#f3ede6; border:0; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:14px; margin-right:6px; margin-top:10px; }
+  table { width:100%; border-collapse:collapse; } td,th { text-align:left; padding:8px 4px; border-bottom:1px solid #433c36; } th { font-size:12px; color:#b5aa9c; font-weight:600; }
+  td.v { font-size:22px; font-weight:800; color:#79b8ff; } tr.me td.v { color:#f3ede6; }
+  .stats { display:flex; gap:22px; flex-wrap:wrap; margin-top:12px; } .stats b { display:block; font-size:20px; } .muted { color:#b5aa9c; font-size:13px; }
+  .err { color:#ff9c8a; } .note { font-size:12.5px; color:#8c8174; margin-top:6px; }
+
+  td.v { font-size:17px; } td, th { font-size:14px; } .bar { height:10px; background:#12171f; border-radius:6px; overflow:hidden; margin-top:6px; } .bar i { display:block; height:100%; background:#79b8ff; } .bar i.over { background:#ff7b72; } .no { color:#ff9c8a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Raid<span>Pick</span></h1>
+  <div class="sub">How much space do you really get from your drives, and how many can fail?</div>
+  <div class="card">
+    <div class="grid">
+      <div><label>Total drives (including spares)</label><input id="n" value="4"></div>
+      <div><label>Size of each drive (TB)</label><input id="size" value="4"></div>
+      <div><label>Hot spares</label><input id="spares" value="0"></div>
+    </div>
+    <button id="p1">4 x 4 TB</button><button id="p2">6 x 8 TB, 1 spare</button><button id="p3">2 x 10 TB</button>
+  </div>
+  <div class="card" id="out"></div>
+  <div class="note">Rules from the standard RAID level definitions (Wikipedia, "Standard RAID levels"). Usable = RAID 0: all drives, RAID 1: one drive, RAID 5: drives minus 1, RAID 6: drives minus 2, RAID 10: half. Minimum drives: RAID 0 and 1: 2, RAID 5: 3, RAID 6 and 10: 4 (RAID 10 needs an even count). All drives are treated as the smallest drive's size, so mix sizes by entering the smallest. "Guaranteed" is the failures any combination survives. RAID 10 can survive more only if each failure hits a different mirror pair. Drive TB are decimal (1 TB = 10^12 bytes) and an operating system that shows TiB reports about 9% less. File system overhead is not subtracted. RAID is availability, not a backup. Runs in your browser, nothing stored.</div>
+</div>
+<script src="engine.js"></script>
+<script>
+(function () {
+  var R = window.RaidPick, $ = function (i) { return document.getElementById(i); };
+  function f(x, d) { return x.toFixed(d); }
+  function render() {
+    var n = parseFloat($('n').value), s = parseFloat($('size').value), sp = parseFloat($('spares').value || '0');
+    var rows = R.compare(n, s, sp);
+    if (rows.some(function (x) { return !x; })) { $('out').innerHTML = '<div class="err">Enter a whole number of drives (1 or more), a drive size above 0 and a whole number of spares.</div>'; return; }
+    var html = '<table><tr><th>Level</th><th>Usable</th><th>Efficiency</th><th>Failures survived</th></tr>';
+    rows.forEach(function (x) {
+      if (!x.ok) { html += '<tr><td>' + x.label + '</td><td colspan="3" class="no">' + x.reason + '</td></tr>'; return; }
+      var t = x.guaranteed === 0 ? '<span class="no">none</span>' : x.guaranteed + ' guaranteed' + (x.best > x.guaranteed ? ', up to ' + x.best : '');
+      html += '<tr><td>' + x.label + '</td><td class="v">' + f(x.usableTb, 1) + ' TB<br><span class="muted">' + f(x.usableTib, 1) + ' TiB</span></td><td>' + f(x.efficiency, 0) + '%</td><td>' + t + '</td></tr>';
+    });
+    $('out').innerHTML = html + '</table><div class="muted" style="margin-top:8px">Raw: ' + f(n * s, 1) + ' TB' + (sp ? ', of which ' + sp + ' spare' + (sp > 1 ? 's' : '') + ' hold no data' : '') + '.</div>';
+  }
+  function set(a, b, c) { $('n').value = a; $('size').value = b; $('spares').value = c; render(); }
+  ['n', 'size', 'spares'].forEach(function (i) { $(i).oninput = render; });
+  $('p1').onclick = function () { set(4, 4, 0); }; $('p2').onclick = function () { set(6, 8, 1); }; $('p3').onclick = function () { set(2, 10, 0); };
+  render();
+})();
+</script>
+</body>
+</html>
