@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RaidPick - usable space and drive-failure tolerance</title>
+<meta name="description" content="Pick a RAID level with the real usable capacity and failure tolerance for your drives.">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:#12171f; color:#f3ede6; line-height:1.6; }
+  .wrap { max-width:680px; margin:0 auto; padding:48px 20px 60px; }
+  .logo { font-size:46px; font-weight:800; } .logo span { color:#79b8ff; }
+  .tag { font-size:19px; margin-top:10px; color:#ded5ca; }
+  .cta { display:inline-block; margin-top:26px; background:#79b8ff; color:#12171f; font-weight:700; padding:14px 30px; border-radius:12px; text-decoration:none; }
+  h2 { font-size:21px; margin:40px 0 10px; } li { color:#b9aea1; margin-bottom:8px; } ul { margin-left:20px; }
+  .demo { margin-top:26px; background:#1b2430; border-radius:14px; padding:18px; } .demo b { color:#79b8ff; }
+  footer { margin-top:50px; font-size:13px; color:#8c8174; } a { color:#79b8ff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">Raid<span>Pick</span></div>
+  <div class="tag">Four 4 TB drives do not give you 16 TB. Find out what you get before you buy.</div>
+  <a class="cta" href="app.html">Open the app</a>
+  <div class="demo">Four 4 TB drives: RAID 5 gives <b>12 TB</b> (75%) and survives 1 failure. RAID 6 gives <b>8 TB</b> and survives 2.</div>
+  <h2>What it does</h2>
+  <ul><li>Usable space for RAID 0, 1, 5, 6 and 10 side by side</li><li>Failures each level survives, guaranteed and best case</li><li>Hot spares and the minimum drive count per level</li><li>TB and TiB, so the number matches your operating system</li></ul>
+  <footer>Rules from the Wikipedia standard RAID levels article. File system overhead not subtracted. RAID is not a backup. Static, client-side, nothing stored. <a href="https://github.com/iLanis-agent/raidpick">Source</a></footer>
+</div>
+</body>
+</html>
